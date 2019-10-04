@@ -3,6 +3,7 @@ import os
 import os.path as osp
 import re
 import webbrowser
+import requests
 
 from qtpy import QtCore
 from qtpy.QtCore import Qt
@@ -335,6 +336,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         help = action('&Tutorial', self.tutorial, icon='help',
                       tip='Show tutorial page')
+        
+        detect = action('&Detect', self.detectionCall, icon='help',
+                        tip='Run Detection on Opened Image')
 
         zoom = QtWidgets.QWidgetAction(self)
         zoom.setDefaultWidget(self.zoomWidget)
@@ -490,6 +494,7 @@ class MainWindow(QtWidgets.QMainWindow):
             edit=self.menu('&Edit'),
             view=self.menu('&View'),
             help=self.menu('&Help'),
+            tools=self.menu('&Tools'),
             recentFiles=QtWidgets.QMenu('Open &Recent'),
             labelList=labelMenu,
         )
@@ -535,6 +540,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 None,
             ),
         )
+        utils.addActions(self.menus.tools, (detect,))
 
         self.menus.file.aboutToShow.connect(self.updateFileMenu)
 
@@ -759,6 +765,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def tutorial(self):
         url = 'https://github.com/wkentaro/labelme/tree/master/examples/tutorial'  # NOQA
         webbrowser.open(url)
+
+    def detectionCall(self):
+        url = 'http://localhost:3000/api/v1/detection/detect'
+        files = {'media': self.imageData}
+        response = requests.post(url, files=files)
+        print(response)
 
     def toggleDrawingSensitive(self, drawing=True):
         """Toggle drawing sensitive.
