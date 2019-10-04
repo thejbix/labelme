@@ -339,6 +339,9 @@ class MainWindow(QtWidgets.QMainWindow):
         
         detect = action('&Detect', self.detectionCall, icon='help',
                         tip='Run Detection on Opened Image')
+        
+        fetch = action('&Fetch', self.fetchResults, icon='help',
+                        tip='Fetch Detection Results')
 
         zoom = QtWidgets.QWidgetAction(self)
         zoom.setDefaultWidget(self.zoomWidget)
@@ -540,7 +543,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 None,
             ),
         )
-        utils.addActions(self.menus.tools, (detect,))
+        utils.addActions(self.menus.tools, (detect,fetch,))
 
         self.menus.file.aboutToShow.connect(self.updateFileMenu)
 
@@ -771,6 +774,12 @@ class MainWindow(QtWidgets.QMainWindow):
         files = {'media': self.imageData}
         response = requests.post(url, files=files)
         print(response)
+
+    def fetchResults(self):
+        url = 'http://localhost:3000/api/v1/detection/fetch'
+        response = requests.get(url)
+        json_response = response.json()
+        
 
     def toggleDrawingSensitive(self, drawing=True):
         """Toggle drawing sensitive.
