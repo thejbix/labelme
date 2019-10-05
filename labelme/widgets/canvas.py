@@ -57,6 +57,8 @@ class Canvas(QtWidgets.QWidget):
         self.offsets = QtCore.QPoint(), QtCore.QPoint()
         self.scale = 1.0
         self.pixmap = QtGui.QPixmap()
+        self.instances = []
+        self.instances_bbox = []
         self.visible = {}
         self._hideBackround = False
         self.hideBackround = False
@@ -494,6 +496,8 @@ class Canvas(QtWidgets.QWidget):
         p.translate(self.offsetToCenter())
 
         p.drawPixmap(0, 0, self.pixmap)
+        for i in range(len(self.instances_bbox)):
+            p.drawPixmap(self.instances_bbox[i][0], self.instances_bbox[i][1], self.instances[i])
         Shape.scale = self.scale
         for shape in self.shapes:
             if (shape.selected or not self._hideBackround) and \

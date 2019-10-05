@@ -5,6 +5,7 @@ import re
 import webbrowser
 import requests
 
+
 from qtpy import QtCore
 from qtpy.QtCore import Qt
 from qtpy import QtGui
@@ -29,6 +30,9 @@ from labelme.widgets import LabelDialog
 from labelme.widgets import LabelQListWidget
 from labelme.widgets import ToolBar
 from labelme.widgets import ZoomWidget
+
+from PIL.ImageQt import ImageQt
+from PIL import Image
 
 
 # FIXME
@@ -776,10 +780,25 @@ class MainWindow(QtWidgets.QMainWindow):
         print(response)
 
     def fetchResults(self):
+        self.canvas.instances = []
+        self.canvas.instances_bbox = []
         url = 'http://localhost:3000/api/v1/detection/fetch'
         response = requests.get(url)
         json_response = response.json()
-        
+        for i in range(json_response["number_of_instances"]):
+            instance = json_response["instances"][i]
+            width = instance["bbox"][2] - instance["bbox"][0]
+            height = instance["bbox"][3] - instance["bbox"][1]
+            im = Image.new('RGBA', (width, height), color = (255,0,0,0))
+            for x in range(width):
+                for y in range(height):
+                    if instance["segments"][y][x] == "1":
+                        im.putpixel((x,y), (255,0,0,100))
+            qim = ImageQt(im)
+            pix = QtGui.QPixmap.fromImage(qim)
+            self.canvas.instances.append(pix)
+            self.canvas.instances_bbox.append(instance["bbox"])
+        self.canvas.repaint()
 
     def toggleDrawingSensitive(self, drawing=True):
         """Toggle drawing sensitive.
