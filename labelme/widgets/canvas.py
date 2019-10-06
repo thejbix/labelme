@@ -58,6 +58,7 @@ class Canvas(QtWidgets.QWidget):
         self.scale = 1.0
         self.pixmap = QtGui.QPixmap()
         self.instances = [] # list of pixmaps
+        self.instances_altered = [] # copy of instances pixmaps but with filters applied
         self.instances_bbox = [] # list of [x1,y1,x2,y2]
         self.instances_area = [] # list of number of pixels for mask
         self.average_instance_area = None

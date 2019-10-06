@@ -5,6 +5,8 @@ import re
 import webbrowser
 import requests
 import math
+import numpy as np
+import random
 
 
 from qtpy import QtCore
@@ -803,6 +805,23 @@ class MainWindow(QtWidgets.QMainWindow):
         print(response)
 
     def fetchResults(self):
+
+        random.seed()
+
+        #calculate average pixel
+        width = self.canvas.pixmap.width()
+        height = self.canvas.pixmap.height()
+        channels_count = 3
+        s = self.canvas.pixmap.toImage().bits().asstring(width * height * channels_count)
+        image_array = np.fromstring(s, dtype=np.uint8).reshape((height, width, channels_count))
+        average_color = np.mean(image_array, axis=(0,1)).astype(int)
+        print(average_color.shape)
+        average_color = np.append(average_color, 255)
+        print(average_color)
+        average_color = [255,0,0,100] # override to red
+
+        
+
         self.canvas.instances = []
         self.canvas.instances_bbox = []
         self.canvas.instances_area = []
@@ -815,12 +834,12 @@ class MainWindow(QtWidgets.QMainWindow):
             instance = json_response["instances"][i]
             width = instance["bbox"][2] - instance["bbox"][0]
             height = instance["bbox"][3] - instance["bbox"][1]
-            im = Image.new('RGBA', (width, height), color = (255,0,0,0))
+            im = Image.new('RGBA', (width, height), color = (0,0,0,0))
             area = 0
             for x in range(width):
                 for y in range(height):
                     if instance["segments"][y][x] == "1":
-                        im.putpixel((x,y), (255,0,0,100))
+                        im.putpixel((x,y), tuple(average_color))
                         area += 1
             areaSum += area
             qim = ImageQt(im)
@@ -828,13 +847,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self.canvas.instances.append(pix)
             self.canvas.instances_bbox.append(instance["bbox"])
             self.canvas.instances_area.append(area)
-            print(i, ": ", self.canvas.instances_area[i])
+            #print(i, ": ", self.canvas.instances_area[i])
         areaAvg = areaSum / number_of_instances
         standard_deviation = math.sqrt(sum(map(lambda x: math.pow(x - areaAvg, 2), self.canvas.instances_area))/number_of_instances)
         self.canvas.average_instance_area = areaAvg
         self.canvas.standard_deviation_area = standard_deviation
         print(areaAvg)
         print(standard_deviation)
+
+        
+        
+        
+
+
         
 
         self.canvas.repaint()
