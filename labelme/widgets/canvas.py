@@ -57,8 +57,13 @@ class Canvas(QtWidgets.QWidget):
         self.offsets = QtCore.QPoint(), QtCore.QPoint()
         self.scale = 1.0
         self.pixmap = QtGui.QPixmap()
-        self.instances = []
-        self.instances_bbox = []
+        self.instances = [] # list of pixmaps
+        self.instances_bbox = [] # list of [x1,y1,x2,y2]
+        self.instances_area = [] # list of number of pixels for mask
+        self.average_instance_area = None
+        self.standard_deviation_area = None
+        self.average_pixel_value = None
+        
         self.visible = {}
         self._hideBackround = False
         self.hideBackround = False
@@ -270,6 +275,45 @@ class Canvas(QtWidgets.QWidget):
                 self.update()
             self.hVertex, self.hShape, self.hEdge = None, None, None
         self.edgeSelected.emit(self.hEdge is not None)
+
+        for i in range(len(self.instances_bbox)):
+            shape = Shape(shape_type='point')
+            middleX = (self.instances_bbox[i][2] + self.instances_bbox[i][2]) // 2
+            middleY = (self.instances_bbox[i][1] + self.instances_bbox[i][3]) // 2
+            shape.addPoint(QtCore.QPointF(middleX,middleY))
+            shape.close()
+            # Look for a nearby vertex to highlight. If that fails,
+            # check if we happen to be inside a shape.
+            index = shape.nearestVertex(pos, self.epsilon / self.scale)
+            index_edge = shape.nearestEdge(pos, self.epsilon / self.scale)
+            if index is not None:
+                if self.selectedVertex():
+                    self.hShape.highlightClear()
+                self.hVertex = index
+                self.hShape = shape
+                self.hEdge = index_edge
+                shape.highlightVertex(index, shape.MOVE_VERTEX)
+                self.overrideCursor(CURSOR_POINT)
+                self.setToolTip(f'{i}: {self.instances_area[i]}')
+                self.setStatusTip(self.toolTip())
+                self.update()
+                break
+            elif shape.containsPoint(pos):
+                if self.selectedVertex():
+                    self.hShape.highlightClear()
+                self.hVertex = None
+                self.hShape = shape
+                self.hEdge = index_edge
+                self.setToolTip(f'{i}: {self.instances_area[i]}')
+                self.setStatusTip(self.toolTip())
+                self.overrideCursor(CURSOR_GRAB)
+                self.update()
+                break
+        else:  # Nothing found, clear highlights, reset state.
+            if self.hShape:
+                self.hShape.highlightClear()
+                self.update()
+            self.hVertex, self.hShape, self.hEdge = None, None, None
 
     def addPointToEdge(self):
         if (self.hShape is None and
@@ -497,7 +541,15 @@ class Canvas(QtWidgets.QWidget):
 
         p.drawPixmap(0, 0, self.pixmap)
         for i in range(len(self.instances_bbox)):
-            p.drawPixmap(self.instances_bbox[i][0], self.instances_bbox[i][1], self.instances[i])
+            if True:#abs(self.instances_area[i] - self.average_instance_area) > (self.standard_deviation_area*2): 
+                #print(i, ": ", self.instances_area[i])
+                p.drawPixmap(self.instances_bbox[i][0], self.instances_bbox[i][1], self.instances[i])
+                point = Shape(shape_type='point')
+                middleX = (self.instances_bbox[i][0] + self.instances_bbox[i][2]) // 2
+                middleY = (self.instances_bbox[i][1] + self.instances_bbox[i][3]) // 2
+                point.addPoint(QtCore.QPointF(middleX,middleY))
+                point.close()
+                point.paint(p)
         Shape.scale = self.scale
         for shape in self.shapes:
             if (shape.selected or not self._hideBackround) and \

@@ -4,6 +4,7 @@ import os.path as osp
 import re
 import webbrowser
 import requests
+import math
 
 
 from qtpy import QtCore
@@ -414,6 +415,13 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         fill_drawing.setChecked(True)
 
+        training_mode = action('Training Mode', self.setTrainingMode,
+                          None, 'training mode',
+                          'Enter mode to create training data', enabled=False)
+        roi_mode = action('Roi Mode', self.setRoiMode, None, 'Roi mode', 'Mode to create regions of interest', enabled=False)
+        label_mode = action('Label Mode', self.setLabelMode, None, 'Label mode', 'Mode to create labels', enabled=False)
+        
+
         # Lavel list context menu.
         labelMenu = QtWidgets.QMenu()
         utils.addActions(labelMenu, (edit, delete))
@@ -445,6 +453,7 @@ class MainWindow(QtWidgets.QMainWindow):
             openNextImg=openNextImg, openPrevImg=openPrevImg,
             fileMenuActions=(open_, opendir, save, saveAs, close, quit),
             tool=(),
+            training_tool=(),
             # XXX: need to add some actions here to activate the shortcut
             editMenu=(
                 edit,
@@ -561,7 +570,7 @@ class MainWindow(QtWidgets.QMainWindow):
             ),
         )
 
-        self.tools = self.toolbar('Tools')
+        self.tools = self.toolbar('Tools', area=Qt.TopToolBarArea)
         # Menu buttons on Left
         self.actions.tool = (
             open_,
@@ -583,6 +592,16 @@ class MainWindow(QtWidgets.QMainWindow):
             fitWindow,
             fitWidth,
         )
+
+        self.training_tool_bar = self.toolbar("Training", area=Qt.TopToolBarArea)
+        self.actions.training_tool = (
+            training_mode,
+            None,
+            roi_mode,
+            label_mode,
+        )
+
+
 
         self.statusBar().showMessage('%s started.' % __appname__)
         self.statusBar().show()
@@ -658,14 +677,14 @@ class MainWindow(QtWidgets.QMainWindow):
             utils.addActions(menu, actions)
         return menu
 
-    def toolbar(self, title, actions=None):
+    def toolbar(self, title, actions=None, area=Qt.LeftToolBarArea):
         toolbar = ToolBar(title)
         toolbar.setObjectName('%sToolBar' % title)
         # toolbar.setOrientation(Qt.Vertical)
         toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         if actions:
             utils.addActions(toolbar, actions)
-        self.addToolBar(Qt.LeftToolBarArea, toolbar)
+        self.addToolBar(area, toolbar)
         return toolbar
 
     # Support Functions
@@ -675,8 +694,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def populateModeActions(self):
         tool, menu = self.actions.tool, self.actions.menu
-        self.tools.clear()
+        training_tool = self.actions.training_tool
+        #self.tools.clear()
         utils.addActions(self.tools, tool)
+        self.addToolBarBreak(Qt.TopToolBarArea)
+        #self.training_tool_bar.clear()
+        utils.addActions(self.training_tool_bar, training_tool)
         self.canvas.menus[0].clear()
         utils.addActions(self.canvas.menus[0], menu)
         self.menus.edit.clear()
@@ -782,23 +805,52 @@ class MainWindow(QtWidgets.QMainWindow):
     def fetchResults(self):
         self.canvas.instances = []
         self.canvas.instances_bbox = []
+        self.canvas.instances_area = []
         url = 'http://localhost:3000/api/v1/detection/fetch'
         response = requests.get(url)
         json_response = response.json()
-        for i in range(json_response["number_of_instances"]):
+        number_of_instances = json_response["number_of_instances"]
+        areaSum = 0
+        for i in range(number_of_instances):
             instance = json_response["instances"][i]
             width = instance["bbox"][2] - instance["bbox"][0]
             height = instance["bbox"][3] - instance["bbox"][1]
             im = Image.new('RGBA', (width, height), color = (255,0,0,0))
+            area = 0
             for x in range(width):
                 for y in range(height):
                     if instance["segments"][y][x] == "1":
                         im.putpixel((x,y), (255,0,0,100))
+                        area += 1
+            areaSum += area
             qim = ImageQt(im)
             pix = QtGui.QPixmap.fromImage(qim)
             self.canvas.instances.append(pix)
             self.canvas.instances_bbox.append(instance["bbox"])
+            self.canvas.instances_area.append(area)
+            print(i, ": ", self.canvas.instances_area[i])
+        areaAvg = areaSum / number_of_instances
+        standard_deviation = math.sqrt(sum(map(lambda x: math.pow(x - areaAvg, 2), self.canvas.instances_area))/number_of_instances)
+        self.canvas.average_instance_area = areaAvg
+        self.canvas.standard_deviation_area = standard_deviation
+        print(areaAvg)
+        print(standard_deviation)
+        
+
         self.canvas.repaint()
+
+    def setTrainingMode(self):
+        return
+
+    def setRoiMode(self):
+        return
+    
+    def setLabelMode(self):
+        return
+
+    
+
+    
 
     def toggleDrawingSensitive(self, drawing=True):
         """Toggle drawing sensitive.
