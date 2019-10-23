@@ -13,9 +13,13 @@ from labelme.app import MainWindow
 from labelme.config import get_config
 from labelme.logger import logger
 from labelme.utils import newIcon
+from labelme.authentication import Authentication
+from labelme.authentication import Login
 
+authentication = Authentication()
 
 def main():
+    print("asdf")
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--version', '-V', action='store_true', help='show version'
@@ -169,11 +173,15 @@ def main():
         win.settings.clear()
         sys.exit(0)
 
-    win.show()
-    win.raise_()
-    sys.exit(app.exec_())
+    login = Login()
+
+    if login.exec_() == QtGui.QDialog.Accepted:
+        win.show()
+        win.raise_()
+        sys.exit(app.exec_())
 
 
 # this main block is required to generate executable by pyinstaller
 if __name__ == '__main__':
+    print("asdfasdfasdkfjasdfk")
     main()

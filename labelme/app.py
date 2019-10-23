@@ -52,6 +52,7 @@ from PIL import Image
 class MainWindow(QtWidgets.QMainWindow):
 
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = 0, 1, 2
+    
 
     def __init__(
         self,
