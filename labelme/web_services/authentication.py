@@ -6,6 +6,7 @@ import os
 from qtpy import QtWidgets
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
+from oauthlib.oauth2 import TokenExpiredError
 
 secrets_path = "labelme/config/secrets.yaml"
 
@@ -18,7 +19,7 @@ def open_secrets(secrets_path):
         print(exc)
         return None
 
-class Authentication:
+class ApiManager:
   base_path = None
   client_id = None
   client_secret = None
@@ -28,8 +29,7 @@ class Authentication:
   username = None
   password = None
   scope = 'user'
-  access_token = None
-  refresh_token = None
+  token = None
 
   def __init__(self):
     global secrets_path
@@ -55,8 +55,8 @@ class Authentication:
           password=self.password, 
           client_id=self.client_id, 
           client_secret=self.client_secret)
-      self.access_token = token['access_token']
-      self.refresh_token = token['refresh_token']
+      print(token)
+      self.token = token
       return True
     except:
       return False
@@ -70,18 +70,37 @@ class Authentication:
           refresh_token=self.refresh_token, 
           client_id=self.client_id, 
           client_secret=self.client_secret)
-      self.access_token = token['access_token']
-      self.refresh_token = token['refresh_token']
+      self.token = token
       return True
     except:
       return False
 
   def signed_in(self):
-    if self.access_token != None:
+    if self.token != None:
       return True
     else:
       return False
 
+  def catchExpiredToken(self, webcall):
+    loopMax = 2
+    for i in range(loopMax):
+      if i == (loopMax - 1):
+        try:
+          oauth = OAuth2Session(client=LegacyApplicationClient(client_id=self.client_id), scope=self.scope, token=self.token)
+          response = webcall(oauth)
+          return response
+        except:
+          return None
+      else:
+        try:
+          oauth = OAuth2Session(client=LegacyApplicationClient(client_id=self.client_id), scope=self.scope, token=self.token)
+          response = webcall(oauth)
+          return response
+        except:
+          self.refresh()
+
+
+  
 class Login(QtWidgets.QDialog):
 
   def __init__(self, parent=None):
@@ -96,10 +115,10 @@ class Login(QtWidgets.QDialog):
     layout.addWidget(self.btnLogin)
 
   def handleLogin(self):
-    authentication = Authentication()
-    authentication.auth("jaydonbixenman@hotmail.com", "password")
-    if authentication.signed_in():
-      __main__.authentication = authentication
+    apiManager = ApiManager()
+    apiManager.auth("jaydonbixenman@hotmail.com", "password")
+    if apiManager.signed_in():
+      __main__.apiManager = apiManager
       self.accept()
     else:
       QtWidgets.QMessageBox.warning(self, 'Error', 'Bad user or password')

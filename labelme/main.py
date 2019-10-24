@@ -13,10 +13,10 @@ from labelme.app import MainWindow
 from labelme.config import get_config
 from labelme.logger import logger
 from labelme.utils import newIcon
-from labelme.authentication import Authentication
-from labelme.authentication import Login
+from labelme.web_services import ApiManager
+from labelme.web_services import Login
 
-authentication = Authentication()
+apiManager = ApiManager()
 
 def main():
     parser = argparse.ArgumentParser()

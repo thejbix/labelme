@@ -7,6 +7,7 @@ import requests
 import math
 import numpy as np
 import random
+import __main__
 
 
 from qtpy import QtCore
@@ -33,6 +34,7 @@ from labelme.widgets import LabelDialog
 from labelme.widgets import LabelQListWidget
 from labelme.widgets import ToolBar
 from labelme.widgets import ZoomWidget
+from labelme.web_services import ApiCalls
 
 from PIL.ImageQt import ImageQt
 from PIL import Image
@@ -800,10 +802,9 @@ class MainWindow(QtWidgets.QMainWindow):
         webbrowser.open(url)
 
     def detectionCall(self):
-        url = 'http://localhost:3000/api/v1/detection/detect'
-        files = {'media': self.imageData}
-        response = requests.post(url, files=files)
-        print(response)
+        apiManager = __main__.apiManager
+        ApiCalls.getProfile(apiManager)
+
 
     def fetchResults(self):
 
