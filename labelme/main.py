@@ -19,7 +19,6 @@ from labelme.authentication import Login
 authentication = Authentication()
 
 def main():
-    print("asdf")
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--version', '-V', action='store_true', help='show version'
@@ -175,7 +174,7 @@ def main():
 
     login = Login()
 
-    if login.exec_() == QtGui.QDialog.Accepted:
+    if login.exec_() == QtWidgets.QDialog.Accepted:
         win.show()
         win.raise_()
         sys.exit(app.exec_())

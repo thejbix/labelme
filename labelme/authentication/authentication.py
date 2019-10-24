@@ -1,27 +1,16 @@
 import requests
 import yaml
-from qtpy import QtGui
-import labelme.main
+import __main__
+import os
 
+from qtpy import QtWidgets
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
 
+secrets_path = "labelme/config/secrets.yaml"
 
-
-
-config_path = "../config/"
-
-client_id = 
-client_secret = 'PJ6aLnVpAC77Ad7-Yg1coVCGm1zbNH1znk8MMWprm8Q'
-redirect_uri = 'cowcounteroauth://connect/callback'
-base = 'https://58a36bc0.ngrok.io'
-authorization_uri = base + "/oauth/authorize"
-token_uri = base + "/oauth/token"
-scope = "user"
-
-def open_secrets(config_path, file_name):
-  file_path = config_path + file_name
-  with open(file_path, 'r') as stream:
+def open_secrets(secrets_path):
+  with open(secrets_path, 'r') as stream:
     try:
         secrets = yaml.safe_load(stream)
         return secrets
@@ -30,20 +19,21 @@ def open_secrets(config_path, file_name):
         return None
 
 class Authentication:
-  self.base_path = None
-  self.client_id = None
-  self.client_secret = None
-  self.client_secret = None
-  self.authorize_uri = None
-  self.token_uri = None
-  self.username = None
-  self.password = None
-  self.scope = 'user'
-  self.access_token = None
-  self.refresh_token = None
+  base_path = None
+  client_id = None
+  client_secret = None
+  client_secret = None
+  authorize_uri = None
+  token_uri = None
+  username = None
+  password = None
+  scope = 'user'
+  access_token = None
+  refresh_token = None
 
   def __init__(self):
-    secrets = open_secrets(config_path, "secrets.yaml")
+    global secrets_path
+    secrets = open_secrets(secrets_path)
     if secrets != None:
       api = secrets['CowCounterAPI']
       self.base_path = api['base_path']
@@ -92,24 +82,26 @@ class Authentication:
     else:
       return False
 
-class Login(QtGui.QDialog):
+class Login(QtWidgets.QDialog):
 
   def __init__(self, parent=None):
     super(Login, self).__init__(parent)
-    self.txtUsername = QtGui.QLineEdit(self)
-    self.txtPassword = QtGui.QLineEdit(self)
-    self.btnLogin = QtGui.QPushButton('Login', self)
+    self.txtUsername = QtWidgets.QLineEdit(self)
+    self.txtPassword = QtWidgets.QLineEdit(self)
+    self.btnLogin = QtWidgets.QPushButton('Login', self)
     self.btnLogin.clicked.connect(self.handleLogin)
-    layout = QtGui.QVBoxLayout(self)
+    layout = QtWidgets.QVBoxLayout(self)
     layout.addWidget(self.txtUsername)
     layout.addWidget(self.txtPassword)
     layout.addWidget(self.btnLogin)
 
   def handleLogin(self):
     authentication = Authentication()
-    authentication.auth("jbixenman@cropquest.com", "password")
+    authentication.auth("jaydonbixenman@hotmail.com", "password")
     if authentication.signed_in():
-      main.authentication = authentication
+      __main__.authentication = authentication
       self.accept()
-     
-    
+    else:
+      QtWidgets.QMessageBox.warning(self, 'Error', 'Bad user or password')
+  
+  
