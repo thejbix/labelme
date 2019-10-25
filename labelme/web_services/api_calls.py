@@ -1,4 +1,5 @@
 from .authentication import ApiManager
+from labelme.models import User
 
 
 class ApiCalls:
@@ -18,9 +19,11 @@ class ApiCalls:
     def call(oauthSession):
       url = apiManager.base_path + '/api/v1/users/profile'
       response = oauthSession.get(url)
-      
       print(response)
-      print(response.json())
+      user = User.from_json(response.json())
+      print(user)
+      user.print_to_console()
+
 
     apiManager.catchExpiredToken(call)
 
