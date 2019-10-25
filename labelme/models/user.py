@@ -1,3 +1,4 @@
+from .picture import Picture
 
 
 class User:
@@ -5,6 +6,7 @@ class User:
   first_name = None
   last_name = None
   email = None
+  pictures = [] #Picture Objects
 
   @staticmethod
   def from_json(json_obj):
