@@ -6,7 +6,6 @@ class User:
   first_name = None
   last_name = None
   email = None
-  pictures = [] #Picture Objects
 
   @staticmethod
   def from_json(json_obj):
@@ -26,6 +25,7 @@ class User:
     print("first_name: ", self.first_name)
     print("last_name: ", self.last_name)
     print("email: ", self.email)
+    print("}")
 
 
   

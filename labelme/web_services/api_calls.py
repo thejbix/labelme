@@ -21,12 +21,26 @@ class ApiCalls:
       response = oauthSession.get(url)
       print(response)
       user = User.from_json(response.json())
-      print(user)
       user.print_to_console()
 
 
-    apiManager.catchExpiredToken(call)
+    user = apiManager.catchExpiredToken(call)
+    print(user)
+    return user
 
+  @staticmethod
+  def fetchResults(apiManger, picture):
+    def call(oauthSession):
+      url = apiManager.base_path + '/api/v1/detection/fetch_masks_from_picture'
+      response = requests.get(url)
+      json_response = response.json()
+      masks = []
+      for mask_json in json_response:
+        mask = Mask.from_json(mask_json)
+        masks.append(mask)
+      return masks
+
+    apiManager.catchExpiredToken(call)
     
 
 

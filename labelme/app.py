@@ -803,7 +803,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def detectionCall(self):
         apiManager = __main__.apiManager
-        ApiCalls.getProfile(apiManager)
+        result = ApiCalls.getProfile(apiManager)
+        print("asdf")
+        print(result)
 
 
     def fetchResults(self):
