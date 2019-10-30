@@ -1,3 +1,3 @@
 from .user import User
-from .data import Data
+from .picture import Picture
 from .mask import Mask

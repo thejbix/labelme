@@ -1,5 +1,3 @@
-from .picture import Picture
-
 
 class User:
   id = 0

@@ -11,6 +11,7 @@ class Picture:
       picture.detection_ran = json_obj['detection_ran']
       return picture
     except:
+      print('error parsing picture from json')
       return None
 
   def print_to_console(self):

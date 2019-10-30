@@ -1,4 +1,3 @@
-id, :picture_id, :instance_number, :roi_x, :roi_y, :roi_x2, :roi_y2, :segmentation
 class Mask:
   id = 0
   picture_id = 0

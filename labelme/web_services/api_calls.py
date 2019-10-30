@@ -10,23 +10,18 @@ class ApiCalls:
       url = apiManager.base_path + '/api/v1/detection/detect'
       files = {'media': imageData}
       response = oauthSession.post(url, files=files)
-      print(response)
-
-    apiManager.catchExpiredToken(call)
+      print(response.json())
+      return response
+    return apiManager.catchExpiredToken(call)
 
   @staticmethod
   def getProfile(apiManager):
     def call(oauthSession):
       url = apiManager.base_path + '/api/v1/users/profile'
       response = oauthSession.get(url)
-      print(response)
       user = User.from_json(response.json())
-      user.print_to_console()
-
-
-    user = apiManager.catchExpiredToken(call)
-    print(user)
-    return user
+      return user
+    return apiManager.catchExpiredToken(call)
 
   @staticmethod
   def fetchResults(apiManger, picture):

@@ -35,6 +35,7 @@ from labelme.widgets import LabelQListWidget
 from labelme.widgets import ToolBar
 from labelme.widgets import ZoomWidget
 from labelme.web_services import ApiCalls
+from labelme.models import Picture
 
 from PIL.ImageQt import ImageQt
 from PIL import Image
@@ -803,9 +804,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def detectionCall(self):
         apiManager = __main__.apiManager
-        result = ApiCalls.getProfile(apiManager)
-        print("asdf")
-        print(result)
+        #result = ApiCalls.getProfile(apiManager)
+        #print("asdf")
+        #print(result)
+        response = ApiCalls.detect(apiManager, self.imageData)
+        picture = Picture.from_json(response.json())
+        picture.print_to_console()
 
 
     def fetchResults(self):

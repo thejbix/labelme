@@ -84,6 +84,7 @@ class ApiManager:
   def catchExpiredToken(self, webcall):
     loopMax = 2
     for i in range(loopMax):
+      print("catchExpiredToken ", i)
       if i == (loopMax - 1):
         try:
           oauth = OAuth2Session(client=LegacyApplicationClient(client_id=self.client_id), scope=self.scope, token=self.token)
