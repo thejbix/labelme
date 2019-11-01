@@ -149,6 +149,21 @@ class MainWindow(QtWidgets.QMainWindow):
         fileListWidget.setLayout(fileListLayout)
         self.file_dock.setWidget(fileListWidget)
 
+        self.pictureListWidget = QtWidgets.QListWidget()
+        self.pictureListWidget.itemSelectionChanged.connect(
+            self.pictureSelectionChanged
+        )
+        pictureListLayout = QtWidgets.QVBoxLayout()
+        pictureListLayout.setContentsMargins(0, 0, 0, 0)
+        pictureListLayout.setSpacing(0)
+        pictureListLayout.addWidget(self.fileSearch)
+        pictureListLayout.addWidget(self.pictureListWidget)
+        self.picture_dock = QtWidgets.QDockWidget(u'Picture List', self)
+        self.picture_dock.setObjectName(u'Pictures')
+        pictureListWidget = QtWidgets.QWidget()
+        pictureListWidget.setLayout(pictureListLayout)
+        self.picture_dock.setWidget(pictureListWidget)
+
         self.zoomWidget = ZoomWidget()
         self.colorDialog = ColorDialog(parent=self)
 
@@ -174,7 +189,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(scrollArea)
 
         features = QtWidgets.QDockWidget.DockWidgetFeatures()
-        for dock in ['flag_dock', 'label_dock', 'shape_dock', 'file_dock']:
+        for dock in ['flag_dock', 'label_dock', 'shape_dock', 'file_dock', 'picture_dock']:
             if self._config[dock]['closable']:
                 features = features | QtWidgets.QDockWidget.DockWidgetClosable
             if self._config[dock]['floatable']:
@@ -189,6 +204,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.label_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.shape_dock)
         self.addDockWidget(Qt.RightDockWidgetArea, self.file_dock)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.picture_dock)
 
         # Actions
         action = functools.partial(utils.newAction, self)
@@ -547,6 +563,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.label_dock.toggleViewAction(),
                 self.shape_dock.toggleViewAction(),
                 self.file_dock.toggleViewAction(),
+                self.picture_dock.toggleViewAction(),
                 None,
                 fill_drawing,
                 None,
@@ -818,6 +835,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 pictures.append(Picture.from_json(picture_json))
             for picture in pictures:
                 picture.print_to_console()
+            self.addPicturesToWidget(pictures)
         
 
 
@@ -1049,6 +1067,23 @@ class MainWindow(QtWidgets.QMainWindow):
             filename = self.imageList[currIndex]
             if filename:
                 self.loadFile(filename)
+
+    def pictureSelectionChanged(self):
+        '''
+        items = self.fileListWidget.selectedItems()
+        if not items:
+            return
+        item = items[0]
+
+        if not self.mayContinue():
+            return
+
+        currIndex = self.imageList.index(str(item.text()))
+        if currIndex < len(self.imageList):
+            filename = self.imageList[currIndex]
+            if filename:
+                self.loadFile(filename)
+        '''
 
     # React to canvas signals.
     def shapeSelectionChanged(self, selected_shapes):
@@ -1763,6 +1798,14 @@ class MainWindow(QtWidgets.QMainWindow):
             lst.append(item.text())
         return lst
 
+    @property
+    def pictureList(self):
+        lst = []
+        for i in range(self.pictureListWidget.count()):
+            item = self.pictureListWidget.item(i)
+            lst.append(item.text())
+        return lst
+
     def importDirImages(self, dirpath, pattern=None, load=True):
         self.actions.openNextImg.setEnabled(True)
         self.actions.openPrevImg.setEnabled(True)
@@ -1789,6 +1832,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 item.setCheckState(Qt.Unchecked)
             self.fileListWidget.addItem(item)
         self.openNextImg(load=load)
+
+    def addPicturesToWidget(self, pictures):
+        self.pictureListWidget.pictures = pictures
+        for picture in pictures:
+            item = QtWidgets.QListWidgetItem(str(picture.id))
+            item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+            self.pictureListWidget.addItem(item)
+            self.pictureListWidget.repaint()
 
     def scanAllImages(self, folderPath):
         extensions = ['.%s' % fmt.data().decode("ascii").lower()
