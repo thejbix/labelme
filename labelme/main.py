@@ -16,8 +16,6 @@ from labelme.utils import newIcon
 from labelme.web_services import ApiManager
 from labelme.web_services import Login
 
-apiManager = ApiManager()
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -176,11 +174,11 @@ def main():
 
     if login.exec_() == QtWidgets.QDialog.Accepted:
         win.show()
+        #win.fetchPictures()
         win.raise_()
         sys.exit(app.exec_())
 
 
 # this main block is required to generate executable by pyinstaller
 if __name__ == '__main__':
-    print("asdfasdfasdkfjasdfk")
     main()

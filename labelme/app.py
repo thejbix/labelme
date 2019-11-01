@@ -7,7 +7,6 @@ import requests
 import math
 import numpy as np
 import random
-import __main__
 
 
 from qtpy import QtCore
@@ -18,6 +17,7 @@ from qtpy import QtWidgets
 from labelme import __appname__
 from labelme import PY2
 from labelme import QT5
+import labelme.global_vars as global_vars
 
 from . import utils
 from labelme.config import get_config
@@ -348,7 +348,7 @@ class MainWindow(QtWidgets.QMainWindow):
         help = action('&Tutorial', self.tutorial, icon='help',
                       tip='Show tutorial page')
         
-        detect = action('&Detect', self.detectionCall, icon='help',
+        detect = action('&Detect', self.fetchPictures, icon='help',
                         tip='Run Detection on Opened Image')
         
         fetch = action('&Fetch', self.fetchResults, icon='help',
@@ -677,6 +677,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # if self.firstStart:
         #    QWhatsThis.enterWhatsThisMode()
 
+
     def menu(self, title, actions=None):
         menu = self.menuBar().addMenu(title)
         if actions:
@@ -803,13 +804,21 @@ class MainWindow(QtWidgets.QMainWindow):
         webbrowser.open(url)
 
     def detectionCall(self):
-        apiManager = __main__.apiManager
-        #result = ApiCalls.getProfile(apiManager)
-        #print("asdf")
-        #print(result)
-        response = ApiCalls.detect(apiManager, self.imageData)
+        response = ApiCalls.detect(global_vars.apiManager, self.imageData)
         picture = Picture.from_json(response.json())
         picture.print_to_console()
+
+    def fetchPictures(self):
+        print(global_vars)
+        print(global_vars.apiManager)
+        response = ApiCalls.fetchPictures(global_vars.apiManager, 0)
+        pictures = []
+        if response.json() != None:
+            for picture_json in response.json():
+                pictures.append(Picture.from_json(picture_json))
+            for picture in pictures:
+                picture.print_to_console()
+        
 
 
     def fetchResults(self):

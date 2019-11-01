@@ -2,6 +2,7 @@
 
 import logging
 import sys
+import os
 
 from qtpy import QT_VERSION
 

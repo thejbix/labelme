@@ -36,6 +36,19 @@ class ApiCalls:
       return masks
 
     apiManager.catchExpiredToken(call)
+
+
+  @staticmethod
+  def fetchPictures(apiManager, page):
+    print(apiManager.signed_in())
+    def call(oauthSession):
+      url = apiManager.base_path + '/api/v1/detection/fetch'
+      PARAMS = {'page':page}
+      response = oauthSession.get(url, params=PARAMS)
+      return response
+      
+
+    return apiManager.catchExpiredToken(call)
     
 
 

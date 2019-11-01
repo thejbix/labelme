@@ -1,12 +1,12 @@
 import requests
 import yaml
-import __main__
 import os
 
 from qtpy import QtWidgets
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
 from oauthlib.oauth2 import TokenExpiredError
+from labelme import global_vars
 
 secrets_path = "labelme/config/secrets.yaml"
 
@@ -90,14 +90,16 @@ class ApiManager:
           oauth = OAuth2Session(client=LegacyApplicationClient(client_id=self.client_id), scope=self.scope, token=self.token)
           response = webcall(oauth)
           return response
-        except:
+        except Exception as e:
+          print(e)
           return None
       else:
         try:
           oauth = OAuth2Session(client=LegacyApplicationClient(client_id=self.client_id), scope=self.scope, token=self.token)
           response = webcall(oauth)
           return response
-        except:
+        except Exception as e:
+          print(e)
           self.refresh()
 
 
@@ -116,10 +118,10 @@ class Login(QtWidgets.QDialog):
     layout.addWidget(self.btnLogin)
 
   def handleLogin(self):
-    apiManager = ApiManager()
+    apiManager = global_vars.apiManager
     apiManager.auth("jaydonbixenman@hotmail.com", "password")
     if apiManager.signed_in():
-      __main__.apiManager = apiManager
+      print(global_vars.apiManager.signed_in())
       self.accept()
     else:
       QtWidgets.QMessageBox.warning(self, 'Error', 'Bad user or password')
