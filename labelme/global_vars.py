@@ -4,4 +4,3 @@
 from labelme.web_services import ApiManager
 
 apiManager = ApiManager()
-print("Global Variables")

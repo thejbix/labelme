@@ -2,6 +2,7 @@ from .authentication import ApiManager
 from labelme.models import User
 
 
+
 class ApiCalls:
 
   @staticmethod
@@ -46,6 +47,19 @@ class ApiCalls:
       PARAMS = {'page':page}
       response = oauthSession.get(url, params=PARAMS)
       return response
+      
+
+    return apiManager.catchExpiredToken(call)
+
+  @staticmethod
+  def downloadImage(apiManager, picture_id):
+    print(apiManager.signed_in())
+    def call(oauthSession):
+      url = apiManager.base_path + '/api/v1/detection/download_image'
+      PARAMS = {'picture_id':picture_id}
+      response = oauthSession.get(url, params=PARAMS)
+      return response
+
       
 
     return apiManager.catchExpiredToken(call)

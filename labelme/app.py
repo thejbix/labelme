@@ -7,6 +7,7 @@ import requests
 import math
 import numpy as np
 import random
+import io
 
 
 from qtpy import QtCore
@@ -367,7 +368,7 @@ class MainWindow(QtWidgets.QMainWindow):
         detect = action('&Detect', self.fetchPictures, icon='help',
                         tip='Run Detection on Opened Image')
         
-        fetch = action('&Fetch', self.fetchResults, icon='help',
+        fetch = action('&Fetch', self.downloadImage, icon='help',
                         tip='Fetch Detection Results')
 
         zoom = QtWidgets.QWidgetAction(self)
@@ -826,8 +827,6 @@ class MainWindow(QtWidgets.QMainWindow):
         picture.print_to_console()
 
     def fetchPictures(self):
-        print(global_vars)
-        print(global_vars.apiManager)
         response = ApiCalls.fetchPictures(global_vars.apiManager, 0)
         pictures = []
         if response.json() != None:
@@ -836,6 +835,23 @@ class MainWindow(QtWidgets.QMainWindow):
             for picture in pictures:
                 picture.print_to_console()
             self.addPicturesToWidget(pictures)
+
+    def downloadImage(self):
+        response = ApiCalls.downloadImage(global_vars.apiManager, 26)
+        #print(response.json())
+        if response.content != None:
+            self.imageData = io.BytesIO(response.content).read()
+            image = QtGui.QImage.fromData(self.imageData)
+            if image.isNull():
+                return
+            self.image = image
+            self.canvas.loadPixmap(QtGui.QPixmap.fromImage(image))
+            self.canvas.setEnabled(True)
+            self.adjustScale(initial=True)
+            self.paintCanvas()
+
+
+        
         
 
 
